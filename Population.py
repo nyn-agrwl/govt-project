@@ -1,12 +1,13 @@
 import re
 from fuzzywuzzy import process
 import random
+from DNA import DNA
 
 class Population:
 	preposLoc="preposition.dat"
 	city_regex="city_regex_new.txt"
 	city_list="cities_list_new.txt"
-	DNA=[]
+	Population=[]
 
 	def __init__(self,input):
 		self.input= input
@@ -74,26 +75,39 @@ class Population:
 
 	def initializeDNA(self):
 		randomSet=set()
-		
 		for i in range(1,20): #20 
 			randomList=[]
 			self.setGenerator(len(self.temp_population[0].split()),randomList)
 			randomSet.add(tuple(randomList))
-			1,5,1,4,
+			self.PopulationList=[]
+
+			for word in self.temp_population:
+				tempList=[]
+				listofwords=word.split()
+				for temp_set in randomSet:
+					listOflocation=[] 
+					start=0
+					location=""
+					for number in temp_set: 
+						for i in range(start,start+number):
+							location+=(listofwords[i]+" ")
+						listOflocation.append(location.strip())
+						start=start+number
+						location=""	
+					for i in range(start,len(listofwords)):
+						location+=(listofwords[i]+" ")
+					listOflocation.append(location.strip())
+					obj=DNA(listOflocation)
+					tempList.append(obj)
+				self.PopulationList.append(tempList)
+
+
+
 		
 
-#house no5 road  bpl ,3
-#split
-#[house ,no5 ,road  ,bpl]
-#join " " 3
-#["house no5 road","bpl"]
-#DNA(["house no5 road","bpl"])
 
-		
-
-
-obj =Population(" house no5  road  bpl") #temp.population=[house no5 road  bpl , house no5 hsbd road ]
-obj.removePreposition() 					 #city_dict{hsbd:[hoshanknd],bpl:[bhopal,bopal,boduppal]}
-obj.fetch_cities()							 #Population_list=[[["house no5","road bpl"],"house no5 road bpl","house no5 road,bpl","house,no5 road bpl"]]
-obj.createTempPopulation()					 #Population_list=[[DNA1(["house no5","road bpl"]),[hoshangabad]),DNA2()]
-obj.initializeDNA()						
+obj =Population(" house no5 hoshangabad road  bpl")
+obj.removePreposition()
+obj.fetch_cities()					 
+obj.createTempPopulation()
+obj.initializeDNA()
