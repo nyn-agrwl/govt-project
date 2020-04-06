@@ -1,7 +1,10 @@
 import re
 from fuzzywuzzy import process
 import random
+import copy
+from geopy.geocoders import Nominatim
 from DNA import DNA
+from SubPopulation import SubPopulation
 
 class Population:
 	preposLoc="preposition.dat"
@@ -50,13 +53,13 @@ class Population:
 		print(self.city_dict)
                 
 
-	def createTempPopulation(self):
+	def createTempPopulation(self): 
 		self.temp_population=[]
 		for word in self.city_dict:
 			self.temp_population.append(self.input.replace(" "+word,"")[0:])
-		#print(self.temp_population)
 	
-	def setGenerator(self,stringLength,list0,sum=0): #improve
+
+	def setGenerator(self,stringLength,list0,sum=0): 
 		temp=0
 		randomNumber=random.randint( 1 , 5)
 		if (randomNumber+sum)==stringLength:
@@ -79,31 +82,96 @@ class Population:
 			randomList=[]
 			self.setGenerator(len(self.temp_population[0].split()),randomList)
 			randomSet.add(tuple(randomList))
-			self.PopulationList=[]
+		
+		TempPopulationList=[]
+		self.PopulationList=[]
 
-			for word in self.temp_population:
-				tempList=[]
-				listofwords=word.split()
-				for temp_set in randomSet:
-					listOflocation=[] 
-					start=0
-					location=""
-					for number in temp_set: 
-						for i in range(start,start+number):
-							location+=(listofwords[i]+" ")
-						listOflocation.append(location.strip())
-						start=start+number
-						location=""	
-					for i in range(start,len(listofwords)):
+		for word in self.temp_population: 
+			tempList=[]
+			listofwords=word.split()
+			for temp_set in randomSet:
+				listOflocation=[] 
+				start=0						#(2,1,) (2,) (3,) (1,) 
+				location=""
+				for number in temp_set: 
+					for i in range(start,start+number):
 						location+=(listofwords[i]+" ")
 					listOflocation.append(location.strip())
-					obj=DNA(listOflocation)
-					tempList.append(obj)
-				self.PopulationList.append(tempList)
+					start=start+number
+					location=""	
+				for i in range(start,len(listofwords)):
+					location+=(listofwords[i]+" ")
+				listOflocation.append(location.strip())
+				obj=DNA(listOflocation)
+				tempList.append(obj)
+			TempPopulationList.append(tempList) #2
+
+		i=0
+		for city in self.city_dict:
+			for word in self.city_dict[city]:
+				obj= SubPopulation(word,copy.deepcopy(TempPopulationList[i]))
+				self.PopulationList.append(obj)
+			i=i+1
 
 
 
+
+	def placeLocator(self): #ISSUE HAI ABHI RUN MAT KARNA
 		
+		for member in self.PopulationList:
+			city=member.getCity()
+			DNAList=member.getDNAList()
+
+		for member in self.PopulationList:
+			city=member.getCity()
+			DNAList=member.getDNAList()
+			cache={}
+			geolocator=Nominatim(user_agent="project",format_string="%s,"+city,timeout=10000)
+
+			for DNAobj in DNAList:
+				placeList=DNAobj.getNonRecognized()
+				recognizedPlace=[]
+				nonrecognizedPlace=[]
+				for place in placeList:
+					if place in cache:
+						if cache[place]==1:
+							recognizedPlace.append(place)
+						else:
+							nonrecognizedPlace.append(place)
+					else :
+						try:
+							location= geolocator.geocode(place)
+						except ValueError as error_message:
+							print(error_message)
+						if location is not None:
+							print(place)
+							print(location)
+							cache[place]=1
+							recognizedPlace.append(place)
+						else:
+							cache[place]=0
+							nonrecognizedPlace.append(place)
+				cache.clear()
+				DNAobj.updateRecognizedWords(recognizedPlace)
+				DNAobj.updateNonRecognizedWords(nonrecognizedPlace)
+
+		print('RECOGNIZED_LISTS')		
+		for member in self.PopulationList:
+			DNAList=member.getDNAList()
+			for DNAobj in DNAList:
+				DNAobj.printRecognized()
+		print('\n')
+		print('NON_RECOGNIZED_LISTS')
+		for member in self.PopulationList:
+			DNAList=member.getDNAList()
+			for DNAobj in DNAList:
+				DNAobj.printNonRecognized()
+
+
+
+
+
+	
 
 
 obj =Population(" house no5 hoshangabad road  bpl")
@@ -111,3 +179,4 @@ obj.removePreposition()
 obj.fetch_cities()					 
 obj.createTempPopulation()
 obj.initializeDNA()
+obj.placeLocator()
