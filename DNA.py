@@ -1,19 +1,19 @@
 
 class DNA:
-	nonRecognized=[]
+	nonRecognized=[] #nonRecognized=["house no5","road bpl"]
 	recognized=[]
-	fitness=0
-
-#[5:57 PM, 3/31/2020] Nayan SIRT: update wordlist()
-#[5:57 PM, 3/31/2020] Nayan SIRT: updaterecognized word list()
-#[5:57 PM, 3/31/2020] Nayan SIRT: fitness score data member=0
-#[5:58 PM, 3/31/2020] Nayan SIRT: CalculatFitnesScore()
-#[5:58 PM, 3/31/2020] Nayan SIRT: static function normalize(DNA[])
+	fitness=0 
 
 	def __init__(self,nonRecognized):
 		self.nonRecognized=nonRecognized
 
-	def updateNonRecogWords(self,nonRecognized):
+	def getNonRecognized(self):
+		return self.nonRecognized
+
+	def getRecognized(self):
+		return self.recognized
+
+	def updateNonRecognizedWords(self,nonRecognized):
 		self.nonRecognized=nonRecognized
 
 	def updateRecognizedWords(self,recognized):
@@ -25,6 +25,12 @@ class DNA:
 
 	def printFitnessScore(self):
 		print(self.fitness)
+
+	def printNonRecognized(self):
+		print(self.nonRecognized)
+
+	def printRecognized(self):
+		print(self.recognized)
 
 
 
